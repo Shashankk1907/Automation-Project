@@ -114,7 +114,7 @@ python sync_leads.py
    npx n8n start
    ```
 2. Open n8n in your browser (`http://localhost:5678`).
-3. Click on **Workflows** -> **Import from file** and select [n8n_workflow.json](file:///Users/shashank/project%20swati/workflows/n8n_workflow.json).
+3. Click on **Workflows** -> **Import from file** and select [n8n_workflow.json](file:///Users/shashank/Automation%20Project/workflows/n8n_workflow.json).
 4. Configure your Google Sheets credentials and Slack webhook channel, then set the flow to Active.
 
 ---
