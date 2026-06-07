@@ -1,0 +1,161 @@
+  {
+    "name": "LeadFlow AI - Inbound Lead Automation",
+    "nodes": [
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyMinute"
+              }
+            ]
+          },
+          "documentId": {
+            "__rl": true,
+            "value": "YOUR_GOOGLE_SHEET_ID_HERE",
+            "mode": "list",
+            "cachedResultName": "Leads Database"
+          },
+          "sheetId": {
+            "__rl": true,
+            "value": "YOUR_SHEET_TAB_ID_HERE",
+            "mode": "list",
+            "cachedResultName": "Sheet1"
+          },
+          "options": {}
+        },
+        "id": "1e7c5b62-959c-469b-83c8-dbd120a1cf60",
+        "name": "Google Sheets Trigger",
+        "type": "n8n-nodes-base.googleSheetsTrigger",
+        "typeVersion": 1,
+        "position": [
+          250,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://localhost:8000/lead",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"name\": \"{{ $json.name }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"source\": \"{{ $json.source }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+          "options": {}
+        },
+        "id": "d0411a01-a1bf-4b2a-8ea6-f76ea10c44de",
+        "name": "Send to LeadFlow Backend",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          480,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "c7aef5ad-6db0-47bf-b582-7d2d3e1d1f05",
+                "leftValue": "={{ $json.classification }}",
+                "rightValue": "Hot",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "cf63db61-fa5d-4f24-9b2d-1ebf84b6f120",
+        "name": "Is Hot Lead?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          720,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "fromEmail": "",
+          "toEmail": "YOUR_EMAIL_HERE",
+          "subject": "=🔥 New Hot Lead Inbound: {{ $json.name }}",
+          "emailFormat": "html",
+          "html": "=<h3>🔥 New Hot Lead Inbound!</h3><br><b>Name:</b> {{ $json.name }}<br><b>Source:</b> {{ $json.source }}<br><b>Message:</b> {{ $json.message }}<br><br>💬 <b>Suggested AI Reply:</b><br><i>\"{{ $json.suggested_reply }}\"</i><br><br>⚡️ <i>Please review and reply in the <a href=\"http://localhost:3000\">LeadFlow AI Dashboard</a></i>"
+        },
+        "id": "92da1ee5-efb0-46ff-a5e2-9f37efc7abf2",
+        "name": "Send Email Alert",
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          980,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "notice": "Normal priority lead processed. Stored in dashboard database."
+        },
+        "id": "b3f3cf8c-8f92-4217-bf48-0d12e987c2fb",
+        "name": "No Action Needed",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          980,
+          400
+        ]
+      }
+    ],
+    "connections": {
+      "Google Sheets Trigger": {
+        "main": [
+          [
+            {
+              "node": "Send to LeadFlow Backend",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send to LeadFlow Backend": {
+        "main": [
+          [
+            {
+              "node": "Is Hot Lead?",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Hot Lead?": {
+        "main": [
+          [
+            {
+              "node": "Send Email Alert",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Action Needed",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": null,
+    "tags": []
+  }
