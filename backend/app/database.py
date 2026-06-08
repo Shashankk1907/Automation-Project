@@ -96,6 +96,18 @@ def insert_lead(
         return new_lead
 
 
+def get_lead_by_email_and_message(email: str, message: str) -> dict | None:
+    """
+    Return a lead dict if email and message match, otherwise None.
+    """
+    with _lock:
+        leads = _load()
+        for lead in leads:
+            if lead.get("email") == email and lead.get("message") == message:
+                return lead
+    return None
+
+
 def get_all_leads() -> list[dict]:
     """Return all leads sorted newest-first."""
     with _lock:

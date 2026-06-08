@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 import logging
 
-from app.database import init_db, insert_lead, get_all_leads, update_lead_status
+from app.database import init_db, insert_lead, get_all_leads, update_lead_status, get_lead_by_email_and_message
 from app.llm import get_lead_analysis
 from app.schemas import LeadCreate, LeadUpdate, ClassifyRequest, ClassifyResponse, LeadResponse, EmailSendRequest, EmailSendResponse
 
@@ -47,6 +47,11 @@ def read_root():
 @app.post("/lead", response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
 def create_lead(lead: LeadCreate):
     try:
+        # 0. Check if lead already exists to avoid redundant LLM calls
+        existing = get_lead_by_email_and_message(lead.email, lead.message)
+        if existing:
+            return existing
+
         # 1. Classify via LLM
         analysis = get_lead_analysis(lead.message)
 

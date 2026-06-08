@@ -146,5 +146,22 @@
     ],
     "status": "New",
     "created_at": "2026-06-08T04:59:19.841578+00:00"
+  },
+  {
+    "id": 10,
+    "name": "Meera Nair",
+    "email": "meera@founderfriendly.com",
+    "phone": "+919876543210",
+    "source": "website_form",
+    "message": "Hey! Big fan of your content on automation. Just wanted to say hi and connect — no immediate project but happy to refer folks your way if anything comes up.",
+    "classification": "Warm",
+    "suggested_reply": "Thanks for reaching out and for the kind words about our automation content! I'd love to connect and would be happy to share some of our latest resources with you.",
+    "signals": [
+      "networking interest",
+      "no immediate project",
+      "referral offering"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T05:30:30.792286+00:00"
   }
 ]

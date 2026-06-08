@@ -4,7 +4,7 @@ import sys
 
 # Import database and LLM helpers
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from app.database import init_db, insert_lead
+from app.database import init_db, insert_lead, get_lead_by_email_and_message
 from app.llm import get_lead_analysis
 
 SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1JgIybKZbZivBrwwadILRo4px6LQLfbVIre7fireHFQ4/export?format=csv"
@@ -21,9 +21,6 @@ def clear_leads():
 
 
 def main():
-    # 1. Clear existing JSON store
-    clear_leads()
-
     # Ensure file structure exists
     init_db()
 
@@ -46,6 +43,7 @@ def main():
     reader = csv.DictReader(lines)
 
     leads_processed = 0
+    leads_skipped = 0
     leads_failed = 0
 
     for row in reader:
@@ -57,6 +55,13 @@ def main():
 
         if not name or not message:
             print(f"Skipping invalid/empty row: {row}")
+            continue
+
+        # Check if duplicate exists before calling LLM
+        existing = get_lead_by_email_and_message(email, message)
+        if existing:
+            print(f"  -> SKIPPED: Lead '{name}' already exists in database (No LLM call).")
+            leads_skipped += 1
             continue
 
         print(f"Processing lead: {name}...")
@@ -86,7 +91,7 @@ def main():
             print(f"  -> ERROR processing lead: {e}")
             leads_failed += 1
 
-    print(f"\nSync finished! Processed: {leads_processed}, Failed: {leads_failed}")
+    print(f"\nSync finished! Processed: {leads_processed}, Skipped: {leads_skipped}, Failed: {leads_failed}")
 
 
 if __name__ == "__main__":
