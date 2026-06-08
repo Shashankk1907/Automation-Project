@@ -1,0 +1,150 @@
+[
+  {
+    "id": 1,
+    "name": "Aarav Mehta",
+    "email": "aarav.mehta+leads@gmail.com",
+    "phone": "+919812345678",
+    "source": "website_form",
+    "message": "Hi! Saw your post on LinkedIn — we need help automating our customer onboarding workflow. Can we hop on a call this week? Budget is around 50k/month for the right partner.",
+    "classification": "Hot",
+    "suggested_reply": "Hi there! We would love to help you automate your customer onboarding workflow and have open slots for a call this week. Please let us know what days work best for you, or you can book a time directly via our calendar link.",
+    "signals": [
+      "automation project request",
+      "call requested",
+      "budget confirmed"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:58:18.439872+00:00"
+  },
+  {
+    "id": 2,
+    "name": "Priya Sharma",
+    "email": "priya.sh@startupinc.co",
+    "phone": "+918765432109",
+    "source": "whatsapp",
+    "message": "is your service free or paid? just exploring options for now",
+    "classification": "Warm",
+    "suggested_reply": "Hi there! Our services are paid, but we offer a variety of flexible plans depending on your needs. I would be happy to send over our pricing guide for you to review.",
+    "signals": [
+      "pricing inquiry",
+      "general exploration"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:58:21.986617+00:00"
+  },
+  {
+    "id": 3,
+    "name": "Rohan Kapoor",
+    "email": "rkapoor@coldmail.in",
+    "phone": "+917654321098",
+    "source": "email",
+    "message": "To Whom It May Concern, I came across your business and would like to know more about your offerings. Please send me a brochure at your earliest convenience.",
+    "classification": "Warm",
+    "suggested_reply": "Thank you for reaching out! I would be happy to send our latest company brochure detailing our services and offerings to your email right away.",
+    "signals": [
+      "brochure request",
+      "exploration of services"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:58:25.771943+00:00"
+  },
+  {
+    "id": 4,
+    "name": "Neha Patel",
+    "email": "neha@growth.io",
+    "phone": "+916543210987",
+    "source": "website_form",
+    "message": "Hey team — I'm building a Shopify store and I need an automation that posts orders to a Slack channel and tags products by category using AI. Saw your work with similar clients. Can you take this on? Need it live by end of month.",
+    "classification": "Hot",
+    "suggested_reply": "We'd love to help you build this Shopify and AI automation, and we can definitely hit your end-of-month deadline! Let's book a quick call to discuss the project details and get started—you can schedule a time here: [Link].",
+    "signals": [
+      "explicit project request",
+      "urgency mentioned",
+      "specific integration requirements"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:58:29.785250+00:00"
+  },
+  {
+    "id": 5,
+    "name": "Vikram Singh",
+    "email": "vsingh@gmail.com",
+    "phone": "+915432109876",
+    "source": "whatsapp",
+    "message": "hello",
+    "classification": "Cold",
+    "suggested_reply": "Hello! How can I help you today?",
+    "signals": [
+      "simple greeting",
+      "no context provided"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:58:32.526509+00:00"
+  },
+  {
+    "id": 6,
+    "name": "Ananya Iyer",
+    "email": "ananya.iyer@bigcorp.com",
+    "phone": "+914321098765",
+    "source": "email",
+    "message": "Hi, I'm the Ops Manager at a 200-person company. We're evaluating vendors for a 6-month engagement to streamline our internal ticketing and AI-assisted triage. Could you share case studies and a rough pricing range? Targeting RFP closure by mid-June.",
+    "classification": "Hot",
+    "suggested_reply": "Hi there! We would love to share our relevant case studies and pricing details for your AI-assisted triage project. Could we schedule a brief call this week to discuss your RFP requirements and ensure we meet your mid-June timeline?",
+    "signals": [
+      "pricing inquiry",
+      "defined timeline",
+      "case study request"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:59:10.906477+00:00"
+  },
+  {
+    "id": 7,
+    "name": "Karan Joshi",
+    "email": "karan@notasked.in",
+    "phone": "+913210987654",
+    "source": "website_form",
+    "message": "win iphone 15 click here www.shadydeal.in",
+    "classification": "Cold",
+    "suggested_reply": "",
+    "signals": [
+      "promotional spam",
+      "unsolicited link"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:59:13.528230+00:00"
+  },
+  {
+    "id": 8,
+    "name": "Riya Desai",
+    "email": "riya.desai+founder@gmail.com",
+    "phone": "+912109876543",
+    "source": "whatsapp",
+    "message": "unsubscribe",
+    "classification": "Cold",
+    "suggested_reply": "",
+    "signals": [
+      "opt-out request",
+      "no marketing interest"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:59:16.250661+00:00"
+  },
+  {
+    "id": 9,
+    "name": "Saurabh Reddy",
+    "email": "sreddy@quietcompany.co",
+    "phone": "+911098765432",
+    "source": "email",
+    "message": "hi, I run a small content studio. need help setting up a workflow that takes a YouTube video transcript and turns it into LinkedIn posts + Instagram carousels automatically. willing to pay one-time fee for setup. when can we talk?",
+    "classification": "Hot",
+    "suggested_reply": "Hi there! We would love to help you automate your content workflow and turn those YouTube transcripts into social posts. Let's schedule a call to discuss the setup—when are you free this week, or you can book directly here: [Calendar Link]?",
+    "signals": [
+      "explicit workflow automation request",
+      "one-time budget confirmed",
+      "direct meeting request"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T04:59:19.841578+00:00"
+  }
+]

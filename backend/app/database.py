@@ -1,81 +1,118 @@
-import sqlite3
+import json
 import os
+import threading
+from datetime import datetime, timezone
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "leads.db")
+# Path to the JSON flat-file store, sitting next to leads.db (now removed)
+LEADS_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "leads.json"
+)
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
-    conn.row_factory = sqlite3.Row
+_lock = threading.Lock()
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _load() -> list[dict]:
+    """Read and return the full leads list from disk."""
+    if not os.path.exists(LEADS_FILE):
+        return []
     try:
-        conn.execute("PRAGMA journal_mode=WAL;")
-    except sqlite3.OperationalError:
-        pass
-    return conn
+        with open(LEADS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
 
-def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS leads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            source TEXT NOT NULL,
-            message TEXT NOT NULL,
-            classification TEXT NOT NULL,
-            suggested_reply TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'New',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
 
-def insert_lead(name: str, email: str, phone: str, source: str, message: str, classification: str, suggested_reply: str) -> dict:
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Check if a lead with the same email and message already exists to prevent duplication
-    cursor.execute("SELECT * FROM leads WHERE email = ? AND message = ?", (email, message))
-    existing_row = cursor.fetchone()
-    if existing_row:
-        conn.close()
-        return dict(existing_row)
-        
-    cursor.execute("""
-        INSERT INTO leads (name, email, phone, source, message, classification, suggested_reply, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'New')
-    """, (name, email, phone, source, message, classification, suggested_reply))
-    lead_id = cursor.lastrowid
-    conn.commit()
-    
-    # Fetch the inserted lead
-    cursor.execute("SELECT * FROM leads WHERE id = ?", (lead_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else {}
+def _save(leads: list[dict]) -> None:
+    """Atomically write the leads list to disk."""
+    tmp_path = LEADS_FILE + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(leads, f, indent=2, ensure_ascii=False)
+    os.replace(tmp_path, LEADS_FILE)
+
+
+def _next_id(leads: list[dict]) -> int:
+    """Return the next auto-increment ID."""
+    if not leads:
+        return 1
+    return max(lead["id"] for lead in leads) + 1
+
+
+# ---------------------------------------------------------------------------
+# Public API  (drop-in replacement for the sqlite version)
+# ---------------------------------------------------------------------------
+
+def init_db() -> None:
+    """Ensure leads.json exists on startup."""
+    with _lock:
+        if not os.path.exists(LEADS_FILE):
+            _save([])
+
+
+def insert_lead(
+    name: str,
+    email: str,
+    phone: str,
+    source: str,
+    message: str,
+    classification: str,
+    suggested_reply: str,
+    signals: list | None = None,
+) -> dict:
+    """
+    Insert a new lead or return an existing one if (email, message) already exists.
+    Returns the stored lead dict.
+    """
+    if signals is None:
+        signals = []
+
+    with _lock:
+        leads = _load()
+
+        # Deduplication check
+        for lead in leads:
+            if lead.get("email") == email and lead.get("message") == message:
+                return lead
+
+        new_lead = {
+            "id": _next_id(leads),
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "source": source,
+            "message": message,
+            "classification": classification,
+            "suggested_reply": suggested_reply,
+            "signals": signals,
+            "status": "New",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        leads.append(new_lead)
+        _save(leads)
+        return new_lead
+
 
 def get_all_leads() -> list[dict]:
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM leads ORDER BY created_at DESC")
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
+    """Return all leads sorted newest-first."""
+    with _lock:
+        leads = _load()
+    return sorted(leads, key=lambda l: l.get("created_at", ""), reverse=True)
+
 
 def update_lead_status(lead_id: int, status: str) -> dict:
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE leads
-        SET status = ?
-        WHERE id = ?
-    """, (status, lead_id))
-    conn.commit()
-    
-    # Fetch updated lead
-    cursor.execute("SELECT * FROM leads WHERE id = ?", (lead_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else {}
+    """
+    Update the status field of a lead by id.
+    Returns the updated lead dict, or an empty dict if not found.
+    """
+    with _lock:
+        leads = _load()
+        for lead in leads:
+            if lead.get("id") == lead_id:
+                lead["status"] = status
+                _save(leads)
+                return lead
+    return {}

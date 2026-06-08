@@ -1,98 +1,128 @@
 import os
 import json
 import logging
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
-
 logger = logging.getLogger(__name__)
 
-# System instructions for LLM
-SYSTEM_INSTRUCTION = """You are an AI lead categorization assistant. Your job is to analyze inbound lead messages and classify them, and draft a short response.
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")  # switch to "claude" if you have API key
+
+SYSTEM_INSTRUCTION = """You are an AI lead categorization assistant. Analyze inbound lead messages and classify them.
 
 Classification criteria:
 - "Hot": Explicit project request, high intent, immediate need, budget mentioned, requests call/pricing, or high-value business opportunity.
 - "Warm": General exploration, questions about services/pricing without immediate project, request for brochure, or interest in connecting/networking.
-- "Cold": Spam, unsubscribe requests, simple greetings ("hello", "hi") without any context, or generic irrelevant messages.
+- "Cold": Spam, unsubscribe requests, simple greetings without context, or generic irrelevant messages.
 
 Reply drafting guidelines:
 - Draft a 1-2 sentence personalized, professional reply.
-- For Hot leads, be proactive, express enthusiasm, and suggest booking a call or offering case studies.
-- For Warm leads, be helpful, answer their question briefly, or offer to send information (like a brochure).
+- For Hot leads: be proactive, express enthusiasm, suggest booking a call.
+- For Warm leads: be helpful, answer briefly, offer to send more information.
 - For Cold leads:
-  - If it is a simple greeting (like "hello", "hi"), write a polite greeting (e.g., "Hello! How can we assist you today?").
-  - If it is spam, an unsubscribe request, or an irrelevant message where no reply should be sent, return an empty string "" for the suggested reply.
+  - Simple greeting (e.g. "hi", "hello"): write a polite greeting back.
+  - Spam / unsubscribe / irrelevant: return empty string "" for suggested_reply.
 
-You MUST respond in JSON format with the following keys:
+Also extract 2-3 short intent signals from the message (e.g. "pricing inquiry", "urgency mentioned", "demo request", "budget confirmed").
+
+Respond ONLY in raw JSON — no markdown, no preamble:
 {
   "classification": "Hot" | "Warm" | "Cold",
-  "suggested_reply": "drafted response or empty string"
-}
-Do not include any other text, markdown blocks, or commentary in your response. Output raw JSON only."""
+  "suggested_reply": "string or empty string",
+  "signals": ["signal1", "signal2"]
+}"""
+
 
 def extract_json(text: str) -> dict:
-    """Safely extracts and parses JSON from a string that might contain markdown blocks or preambles."""
+    """Safely extract and parse JSON from a string that may contain markdown or preamble."""
     try:
         start = text.find("{")
         end = text.rfind("}")
         if start != -1 and end != -1:
-            json_str = text[start:end+1]
-            data = json.loads(json_str)
+            data = json.loads(text[start:end + 1])
             if "classification" in data and "suggested_reply" in data:
                 return data
     except Exception as e:
-        logger.warning(f"Failed to parse extracted JSON: {e}. Raw text was: {text}")
+        logger.warning(f"JSON parse failed: {e} | Raw: {text[:100]}")
     return {}
 
+
 def classify_lead_gemini(message: str, api_key: str) -> dict:
-    """Calls Gemini API using google-genai package with structured JSON request, retrying on 429 rate limits."""
-    import time
+    """Call Gemini API with exponential backoff on rate limits."""
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=api_key)
+
     for attempt in range(5):
         try:
-            from google import genai
-            from google.genai import types
-            client = genai.Client(api_key=api_key)
-            
-            prompt = f"{SYSTEM_INSTRUCTION}\n\nLead Message: {message}"
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
+                model="gemini-3.5-flash",
+                contents=f"{SYSTEM_INSTRUCTION}\n\nLead Message: {message}",
+                config=types.GenerateContentConfig(response_mime_type="application/json"),
             )
             result = extract_json(response.text)
             if result:
                 return result
         except Exception as e:
-            err_msg = str(e)
-            if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                # Calculate sleep with exponential backoff: 6s, 10s, 18s, 34s, etc.
+            err = str(e)
+            if "429" in err or "RESOURCE_EXHAUSTED" in err:
                 sleep_time = (2 ** attempt) * 4 + 2
-                logger.warning(f"Gemini API rate limited (429). Retrying in {sleep_time}s... (Attempt {attempt+1}/5)")
+                logger.warning(f"Gemini rate limited. Retrying in {sleep_time}s (attempt {attempt + 1}/5)")
                 time.sleep(sleep_time)
             else:
-                logger.error(f"Gemini API call failed: {e}")
+                logger.error(f"Gemini API error: {e}")
                 break
     return {}
 
+
+def classify_lead_claude(message: str, api_key: str) -> dict:
+    """Call Claude API (Anthropic). Drop-in swap for Gemini."""
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=api_key)
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=512,
+            system=SYSTEM_INSTRUCTION,
+            messages=[{"role": "user", "content": f"Lead Message: {message}"}],
+        )
+        return extract_json(response.content[0].text)
+    except Exception as e:
+        logger.error(f"Claude API error: {e}")
+        return {}
+
+
 def get_lead_analysis(message: str) -> dict:
-    """Classifies a lead message entirely using the Gemini API."""
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        logger.error("GEMINI_API_KEY environment variable is not set.")
-        raise ValueError("GEMINI_API_KEY environment variable is required. Please set it in your environment or .env file.")
-        
-    logger.info("Calling Gemini API for lead classification...")
-    result = classify_lead_gemini(message, gemini_key)
-    
-    if not result or "classification" not in result or "suggested_reply" not in result:
-        # Default fallback in case the API call failed entirely to prevent database constraint errors,
-        # but logging it as an API failure.
-        logger.error(f"Failed to get classification from Gemini for message: {message[:50]}...")
+    """
+    Classify a lead message using the configured LLM provider.
+    Set LLM_PROVIDER=claude in .env to switch from Gemini to Claude.
+    """
+    if LLM_PROVIDER == "claude":
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY is not set in your environment.")
+        logger.info("Classifying lead via Claude...")
+        result = classify_lead_claude(message, api_key)
+    else:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not set in your environment.")
+        logger.info("Classifying lead via Gemini...")
+        result = classify_lead_gemini(message, api_key)
+
+    if not result or "classification" not in result:
+        # Return Unclassified so a human can review — don't silently drop to Cold
+        logger.error(f"Classification failed for message: {message[:60]}...")
         return {
-            "classification": "Cold",
-            "suggested_reply": ""
+            "classification": "Unclassified",
+            "suggested_reply": "",
+            "signals": [],
+            "error": True,
         }
-        
+
+    # Ensure signals key always exists even if LLM omits it
+    result.setdefault("signals", [])
     return result
