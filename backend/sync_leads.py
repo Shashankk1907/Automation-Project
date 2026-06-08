@@ -10,18 +10,7 @@ from app.llm import get_lead_analysis
 SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/1JgIybKZbZivBrwwadILRo4px6LQLfbVIre7fireHFQ4/export?format=csv"
 
 
-def clear_leads():
-    """Overwrite leads.json with an empty list."""
-    import json
-    from app.database import LEADS_FILE
-    print("Clearing all leads from leads.json...")
-    with open(LEADS_FILE, "w", encoding="utf-8") as f:
-        json.dump([], f)
-    print("Cleared successfully.")
-
-
 def main():
-    # Ensure file structure exists
     init_db()
 
     # 2. Fetch CSV from Google Sheet
@@ -52,6 +41,20 @@ def main():
         phone = row.get("phone", "").strip()
         source = row.get("source", "").strip()
         message = row.get("message", "").strip()
+
+        # Handle split name format (6 columns: name, last_name, email, phone, source, message)
+        # In split format, the 'email' column contains the last name (no '@'),
+        # and the actual message is parsed into the empty string key ('') by DictReader.
+        extra_val = row.get("")
+        if not extra_val and None in row and row[None]:
+            extra_val = row[None][0]
+
+        if email and "@" not in email and extra_val:
+            name = f"{name} {email}".strip()
+            email = phone
+            phone = source
+            source = message
+            message = extra_val.strip()
 
         if not name or not message:
             print(f"Skipping invalid/empty row: {row}")

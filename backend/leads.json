@@ -62,7 +62,7 @@
       "urgency mentioned",
       "specific integration requirements"
     ],
-    "status": "New",
+    "status": "Contacted",
     "created_at": "2026-06-08T04:58:29.785250+00:00"
   },
   {
@@ -95,7 +95,7 @@
       "defined timeline",
       "case study request"
     ],
-    "status": "New",
+    "status": "Contacted",
     "created_at": "2026-06-08T04:59:10.906477+00:00"
   },
   {
@@ -144,7 +144,7 @@
       "one-time budget confirmed",
       "direct meeting request"
     ],
-    "status": "New",
+    "status": "Contacted",
     "created_at": "2026-06-08T04:59:19.841578+00:00"
   },
   {
@@ -163,5 +163,121 @@
     ],
     "status": "New",
     "created_at": "2026-06-08T05:30:30.792286+00:00"
+  },
+  {
+    "id": 11,
+    "name": "Priya Patel",
+    "email": "p.patel@nexasolutions.com",
+    "phone": "919988776655",
+    "source": "demo_request",
+    "message": "Interested in your custom AI agent workflows for our customer support team. We have 50+ agents and need a proof of concept deployed within 2 weeks.",
+    "classification": "Hot",
+    "suggested_reply": "We would love to help you build and deploy a custom AI agent proof of concept for your support team within your two-week timeline! Let's schedule a brief call this week to align on your requirements and get started right away.",
+    "signals": [
+      "proof of concept request",
+      "urgency mentioned",
+      "large team scale"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T07:07:14.959641+00:00"
+  },
+  {
+    "id": 12,
+    "name": "Rohan Mehta",
+    "email": "rohan@ecomflow.in",
+    "phone": "919123456789",
+    "source": "contact_page",
+    "message": "Our Make.com scenarios keep breaking and we are losing customers. Need an expert to audit and rebuild our backend automation ASAP. Please send your calendar link.",
+    "classification": "Hot",
+    "suggested_reply": "I'm so sorry to hear that your Make.com scenarios are impacting your customers, but we can absolutely help you audit and rebuild them. Here is my calendar link [Insert Link] so we can schedule an urgent call and get this resolved for you right away.",
+    "signals": [
+      "system downtime impact",
+      "urgent audit requested",
+      "calendar link requested"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T07:07:46.296167+00:00"
+  },
+  {
+    "id": 13,
+    "name": "Arjun Sharma",
+    "email": "arjun@scaleupmedia.co",
+    "phone": "919812345678",
+    "source": "linkedin_inbound",
+    "message": "Looking to fully automate our lead onboarding and CRM syncing by next month. Budget is around $5k. Can we jump on a discovery call this Thursday?",
+    "classification": "Hot",
+    "suggested_reply": "We would love to help you automate your lead onboarding and CRM syncing by next month! I am absolutely available this Thursday—please let me know what time works best for you to hop on a call.",
+    "signals": [
+      "budget confirmed",
+      "timeline defined",
+      "call requested"
+    ],
+    "status": "Contacted",
+    "created_at": "2026-06-08T07:07:51.004357+00:00"
+  },
+  {
+    "id": 14,
+    "name": "Rohan",
+    "email": "Mehta",
+    "phone": "rohan@ecomflow.in",
+    "source": "919123456789",
+    "message": "contact_page",
+    "classification": "Cold",
+    "suggested_reply": "",
+    "signals": [
+      "no context provided",
+      "incomplete submission"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T07:14:48.025062+00:00"
+  },
+  {
+    "id": 15,
+    "name": "Arjun",
+    "email": "Sharma",
+    "phone": "arjun@scaleupmedia.co",
+    "source": "919812345678",
+    "message": "linkedin_inbound",
+    "classification": "Cold",
+    "suggested_reply": "Hello! Thanks for reaching out. Let me know if you have any questions about our services or how we can help you.",
+    "signals": [
+      "no clear intent",
+      "generic connection"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T07:15:17.679360+00:00"
+  },
+  {
+    "id": 16,
+    "name": "Vikram",
+    "email": "Joshi",
+    "phone": "vikram@growthops.ai",
+    "source": "919822334455",
+    "message": "linkedin_inbound",
+    "classification": "Cold",
+    "suggested_reply": "",
+    "signals": [
+      "no context provided",
+      "irrelevant message"
+    ],
+    "status": "New",
+    "created_at": "2026-06-08T07:18:08.985666+00:00"
+  },
+  {
+    "id": 17,
+    "name": "AnanyaDeshmukh",
+    "email": "ananya@shopfrenzy.in",
+    "phone": "919766554433",
+    "source": "linkedin_inbound",
+    "message": "Our order fulfillment workflows are manual and failing at scale. Need an automated solution for inventory and shipping sync by next month. Budget is $6k, let's connect.",
+    "classification": "Hot",
+    "suggested_reply": "We would love to help you automate your fulfillment workflows and resolve your scaling issues by next month. Let's schedule a brief call this week to discuss how we can deliver this within your $6k budget—do you have time this Tuesday?",
+    "signals": [
+      "immediate timeline",
+      "budget specified",
+      "workflow automation request"
+    ],
+    "status": "Contacted",
+    "created_at": "2026-06-08T07:29:04.913648+00:00"
   }
 ]

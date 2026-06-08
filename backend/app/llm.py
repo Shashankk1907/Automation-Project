@@ -67,9 +67,9 @@ def classify_lead_gemini(message: str, api_key: str) -> dict:
                 return result
         except Exception as e:
             err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            if "429" in err or "RESOURCE_EXHAUSTED" in err or "503" in err or "UNAVAILABLE" in err:
                 sleep_time = (2 ** attempt) * 4 + 2
-                logger.warning(f"Gemini rate limited. Retrying in {sleep_time}s (attempt {attempt + 1}/5)")
+                logger.warning(f"Gemini API busy or rate limited. Retrying in {sleep_time}s (attempt {attempt + 1}/5)")
                 time.sleep(sleep_time)
             else:
                 logger.error(f"Gemini API error: {e}")

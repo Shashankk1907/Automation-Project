@@ -3,17 +3,12 @@ import os
 import threading
 from datetime import datetime, timezone
 
-# Path to the JSON flat-file store, sitting next to leads.db (now removed)
 LEADS_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "leads.json"
 )
 
 _lock = threading.Lock()
 
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
 
 def _load() -> list[dict]:
     """Read and return the full leads list from disk."""
@@ -41,10 +36,6 @@ def _next_id(leads: list[dict]) -> int:
         return 1
     return max(lead["id"] for lead in leads) + 1
 
-
-# ---------------------------------------------------------------------------
-# Public API  (drop-in replacement for the sqlite version)
-# ---------------------------------------------------------------------------
 
 def init_db() -> None:
     """Ensure leads.json exists on startup."""
